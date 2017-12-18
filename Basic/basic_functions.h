@@ -8,6 +8,7 @@ namespace basic
 {
     bool json_check_object(const rapidjson::Value& json, const char * field);
     bool json_check_array(const rapidjson::Value& json, const char * field);
+    bool json_check_null(const rapidjson::Value& json, const char * field);
     bool json_get_value(const rapidjson::Value& json, const char * field, std::string & value);
     bool json_get_value(const rapidjson::Value& json, const char * field, int & value);
     bool json_get_value(const rapidjson::Value& json, const char * field, unsigned & value);

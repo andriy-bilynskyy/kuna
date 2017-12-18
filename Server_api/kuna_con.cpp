@@ -41,6 +41,21 @@ std::string OderBookData_t::toString()
     return result.str();
 }
 
+std::string TradesHistory_t::toString()
+{
+    std::stringstream result;
+
+    result << "id         : " << id << '\n';
+    result << "price      : " << price << '\n';
+    result << "volume     : " << volume << '\n';
+    result << "funds      : " << funds << '\n';
+    result << "market     : " << market << '\n';
+    result << "created at : " << ctime(&created_at);
+    result << "side       : " << side;
+
+    return result.str();
+}
+
 kuna_con::kuna_con()
 {
     dbg::dout  << dbg::info << "kuna connector constructed." << dbg::endl;
@@ -74,6 +89,17 @@ std::vector<OderBookData_t> kuna_con::order_book_data()
     if(!parse_order_book_data(response, result))
     {
         dbg::dout  << dbg::err << "order book data failed (raw value): '" <<  response << "'" << dbg::endl;
+    }
+    return result;
+}
+
+std::vector<TradesHistory_t> kuna_con::trades_history_data()
+{
+    std::string response = request("https://kuna.io/api/v2/trades?market=btcuah");
+    std::vector<TradesHistory_t> result;
+    if(!parse_trades_history_data(response, result))
+    {
+        dbg::dout  << dbg::err << "trades history data failed (raw value): '" <<  response << "'" << dbg::endl;
     }
     return result;
 }
@@ -250,3 +276,61 @@ bool kuna_con::parse_order(const rapidjson::Value& json, OderBookData_t & order)
     return result;
 }
 
+bool kuna_con::parse_trades_history_data(const std::string & json, std::vector<TradesHistory_t> & tradeshist)
+{
+    bool result = false;
+    rapidjson::Document document;
+
+    rapidjson::ParseResult ok = document.Parse(json.c_str());
+    if(ok)
+    {
+        rapidjson::Value &top = document;
+        if(top.IsArray())
+        {
+            result = true;
+            for(rapidjson::SizeType i = 0; i < top.Size(); i++)
+            {
+                rapidjson::Value &item = top[i];
+                TradesHistory_t hist;
+                if(parse_history(item, hist))
+                {
+                    tradeshist.push_back(hist);
+                }
+                else
+                {
+                    result = false;
+                    dbg::dout  << dbg::err << "wrong json format of history item." << dbg::endl;
+                }
+            }
+        }
+        else
+        {
+            dbg::dout  << dbg::err << "wrong json format of history data." << dbg::endl;
+        }
+    }
+    else
+    {
+        dbg::dout  << dbg::err << "wrong json format." << dbg::endl;
+    }
+    return result;
+}
+
+bool kuna_con::parse_history(const rapidjson::Value& json, TradesHistory_t & hist)
+{
+    bool result = false;
+    if(basic::json_get_value(json, "id", hist.id)                   &&
+       basic::json_get_value(json, "price", hist.price)             &&
+       basic::json_get_value(json, "volume", hist.volume)           &&
+       basic::json_get_value(json, "funds", hist.funds)             &&
+       basic::json_get_value(json, "market", hist.market)           &&
+       basic::json_get_value(json, "created_at", hist.created_at)   &&
+       basic::json_check_null(json, "side"))
+    {
+        result = true;
+    }
+    else
+    {
+        dbg::dout  << dbg::err << "wrong json format of history data." << dbg::endl;
+    }
+    return result;
+}

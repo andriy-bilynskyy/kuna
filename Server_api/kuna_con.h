@@ -45,6 +45,22 @@ struct OderBookData_t
     uint32_t    trades_count;       // the number of the trades on the order
 };
 
+struct TradesHistory_t
+{
+    TradesHistory_t() : id(0), price(), volume(), funds(0), market(),
+                        created_at(0), side() {}
+
+    std::string toString();
+
+    uint32_t    id;                 // trade ID
+    double      price;              // price for 1 BTC
+    double      volume;             // volume in BTC
+    double      funds;              // volume in UAH
+    std::string market;             // market ID
+    time_t      created_at;         // the time of trade
+    std::string side;               // always null
+};
+
 class kuna_con
 {
 public:
@@ -53,12 +69,15 @@ public:
     std::string server_timestamp();
     RecentMarketData_t recent_market_data();
     std::vector<OderBookData_t> order_book_data();
+    std::vector<TradesHistory_t> trades_history_data();
 private:
     std::string request(std::string url);
     static size_t writeCallback(char * data, size_t size, size_t nmemb, std::string * buf);
     bool parse_recent_market_data(const std::string & json, RecentMarketData_t & market);
     bool parse_order_book_data(const std::string & json, std::vector<OderBookData_t> & orderbook);
     bool parse_order(const rapidjson::Value& json, OderBookData_t & order);
+    bool parse_trades_history_data(const std::string & json, std::vector<TradesHistory_t> & tradeshist);
+    bool parse_history(const rapidjson::Value& json, TradesHistory_t & hist);
 };
 
 #endif

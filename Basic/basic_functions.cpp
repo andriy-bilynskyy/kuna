@@ -65,6 +65,29 @@ namespace basic
         return result;
     }
 
+    bool json_check_null(const rapidjson::Value& json, const char * field)
+    {
+        bool result = false;
+
+        if(json.HasMember(field))
+        {
+            if(json[field].IsNull())
+            {
+                result = true;
+            }
+            else
+            {
+                dbg::dout  << dbg::err << "Member '" << field << "' is not a NULL" << dbg::endl;
+            }
+        }
+        else
+        {
+            dbg::dout  << dbg::err << "Member '" << field << "' is not exists." << dbg::endl;
+        }
+
+        return result;
+    }
+
     bool json_get_value(const rapidjson::Value& json, const char * field, std::string & value)
     {
         bool result = false;

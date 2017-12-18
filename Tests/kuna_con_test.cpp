@@ -22,6 +22,13 @@ int main()
         dbg::dout << "\n" << it->toString() << dbg::endl;
     }
 
+    std::vector<TradesHistory_t> trades_history = connector.trades_history_data();
+    dbg::dout << "book order data" << dbg::endl;
+    for(std::vector<TradesHistory_t>::iterator it = trades_history.begin(); it != trades_history.end(); ++it)
+    {
+        dbg::dout << "\n" << it->toString() << dbg::endl;
+    }
+
     return 0;
 }
 
